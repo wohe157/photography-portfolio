@@ -1,0 +1,44 @@
+resource "aws_s3_bucket" "media" {
+  bucket        = "wh-photography-portfolio-media-${var.suffix}"
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_website_configuration" "media" {
+  bucket = aws_s3_bucket.media.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "media" {
+  bucket = aws_s3_bucket.media.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_policy" "media_public" {
+  bucket = aws_s3_bucket.media.id
+  policy = data.aws_iam_policy_document.media_public.json
+}
+
+data "aws_iam_policy_document" "media_public" {
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.media.arn}/*"]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    effect = "Allow"
+  }
+}

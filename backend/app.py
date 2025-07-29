@@ -1,30 +1,34 @@
+import boto3
 import os
+import json
 
-from flask import Flask, jsonify
-from flask_cors import CORS
+s3 = boto3.client("s3")
+BUCKET = os.environ["MEDIA_BUCKET"]
 
-
-app = Flask(__name__)
-CORS(app)
-PHOTO_ROOT = '/media'
-
-
-@app.route('/api/gallery')
-def api_gallery():
+def lambda_handler(event, context):
+    response = s3.list_objects_v2(Bucket=BUCKET, Delimiter='/')
     groups = []
-    for group_name in sorted(os.listdir(PHOTO_ROOT)):
-        group_path = os.path.join(PHOTO_ROOT, group_name)
-        if os.path.isdir(group_path):
-            images = sorted([
-                f for f in os.listdir(group_path)
-                if f.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp'))
-            ])
-            groups.append({
-                'name': group_name,
-                'title': group_name.capitalize(),
-                'images': images
-            })
-    return jsonify({'groups': groups})
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True)
+    for prefix in response.get("CommonPrefixes", []):
+        group = prefix["Prefix"].rstrip("/")
+        image_resp = s3.list_objects_v2(Bucket=BUCKET, Prefix=f"{group}/")
+        images = [
+            obj["Key"].split("/")[-1]
+            for obj in image_resp.get("Contents", [])
+            if obj["Key"].lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp'))
+        ]
+        groups.append({
+            "name": group,
+            "title": group.capitalize(),
+            "images": images
+        })
+
+    return {
+        "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET,OPTIONS",
+            "Access-Control-Allow-Headers": "*"
+        },
+        "body": json.dumps({"groups": groups})
+    }

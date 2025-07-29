@@ -1,0 +1,14 @@
+# Local Terraform state
+terraform.tfstate
+terraform.tfstate.backup
+
+# Crash logs
+crash.log
+*.tfplan
+
+# CLI configuration
+.terraform/
+
+# Sensitive override files
+*.tfvars
+*.tfvars.json
