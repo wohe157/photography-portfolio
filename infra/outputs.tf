@@ -12,3 +12,7 @@ output "backend_api_url" {
   value       = module.backend.api_url
   description = "URL of the deployed backend API"
 }
+
+output "random_id" {
+  value = random_id.suffix.hex
+}
