@@ -1,10 +1,15 @@
-resource "aws_s3_bucket" "frontend" {
-  bucket        = "wh-photography-portfolio-frontend-${var.suffix}"
+variable "cloudfront_distribution_arn" {
+  description = "ARN of the CloudFront distribution that will access the S3 bucket"
+  type        = string
+}
+
+resource "aws_s3_bucket" "frontend_bucket" {
+  bucket        = "wh-photography-portfolio-frontend"
   force_destroy = true
 }
 
-resource "aws_s3_bucket_website_configuration" "frontend" {
-  bucket = aws_s3_bucket.frontend.id
+resource "aws_s3_bucket_website_configuration" "frontend_bucket_website" {
+  bucket = aws_s3_bucket.frontend_bucket.id
 
   index_document {
     suffix = "index.html"
@@ -15,8 +20,8 @@ resource "aws_s3_bucket_website_configuration" "frontend" {
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "frontend" {
-  bucket = aws_s3_bucket.frontend.id
+resource "aws_s3_bucket_public_access_block" "frontend_bucket_public_access_block" {
+  bucket = aws_s3_bucket.frontend_bucket.id
 
   block_public_acls       = false
   block_public_policy     = false
@@ -24,21 +29,36 @@ resource "aws_s3_bucket_public_access_block" "frontend" {
   restrict_public_buckets = false
 }
 
-resource "aws_s3_bucket_policy" "frontend_public" {
-  bucket = aws_s3_bucket.frontend.id
-  policy = data.aws_iam_policy_document.frontend_public.json
+resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "AllowCloudFrontServicePrincipalReadOnly",
+        Effect = "Allow",
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        },
+        Action = [
+          "s3:GetObject"
+        ],
+        Resource = "${aws_s3_bucket.frontend_bucket.arn}/*",
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = var.cloudfront_distribution_arn
+          }
+        }
+      }
+    ]
+  })
 }
 
-data "aws_iam_policy_document" "frontend_public" {
-  statement {
-    actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.frontend.arn}/*"]
+output "bucket_domain_name" {
+  value = aws_s3_bucket.frontend_bucket.bucket_regional_domain_name
+}
 
-    principals {
-      type        = "*"
-      identifiers = ["*"]
-    }
-
-    effect = "Allow"
-  }
+output "website_domain_name" {
+  value = aws_s3_bucket_website_configuration.frontend_bucket_website.website_endpoint
 }

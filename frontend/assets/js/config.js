@@ -1,2 +1,2 @@
-window.GALLERY_API_BASE = "http://127.0.0.1:5000/api";
-window.GALLERY_IMAGE_BASE = "http://127.0.0.1:9000";
+window.GALLERY_API_BASE = "https://photo.wouterheyvaert.be/api";
+window.GALLERY_IMAGE_BASE = "https://photo.wouterheyvaert.be/media";
