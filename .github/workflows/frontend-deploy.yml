@@ -27,14 +27,6 @@ jobs:
 
       - name: Upload to S3 with metadata
         run: |
-          # Set cache control for different file types
-          aws s3 sync frontend/ s3://wh-photography-portfolio-frontend \
-            --delete \
-            --cache-control "public, max-age=31536000, immutable" \
-            --exclude "*.html" \
-            --exclude "*/config.js"
-
-          # Upload HTML and config files with different cache settings
           aws s3 sync frontend/ s3://wh-photography-portfolio-frontend \
             --cache-control "public, max-age=0, must-revalidate" \
             --include "*.html" \
@@ -42,7 +34,6 @@ jobs:
 
       - name: Verify deployment
         run: |
-          # Check if files were uploaded successfully
           aws s3api list-objects-v2 --bucket wh-photography-portfolio-frontend --query 'Contents[].Key' --output text
 
       - name: Invalidate CloudFront cache
