@@ -1,0 +1,56 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/photography-portfolio-github-actions-role
+          aws-region: eu-west-1
+
+      - name: Upload to S3 with metadata
+        run: |
+          # Set cache control for different file types
+          aws s3 sync frontend/ s3://wh-photography-portfolio-frontend \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "*.html" \
+            --exclude "*/config.js"
+
+          # Upload HTML and config files with different cache settings
+          aws s3 sync frontend/ s3://wh-photography-portfolio-frontend \
+            --cache-control "public, max-age=0, must-revalidate" \
+            --include "*.html" \
+            --include "*/config.js"
+
+      - name: Verify deployment
+        run: |
+          # Check if files were uploaded successfully
+          aws s3api list-objects-v2 --bucket wh-photography-portfolio-frontend --query 'Contents[].Key' --output text
+
+      - name: Invalidate CloudFront cache
+        run: |
+          # Get the distribution ID from SSM Parameter Store
+          DISTRIBUTION_ID=$(aws ssm get-parameter --name "/photography-portfolio/cloudfront-distribution-id" --query "Parameter.Value" --output text)
+
+          # Create invalidation and wait for completion
+          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --query "Invalidation.Id" --output text)
+          echo "Waiting for invalidation to complete..."
+          aws cloudfront wait invalidation-completed --distribution-id $DISTRIBUTION_ID --id $INVALIDATION_ID
