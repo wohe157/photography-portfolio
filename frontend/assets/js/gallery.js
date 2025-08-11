@@ -1,7 +1,6 @@
 function galleryLoader() {
-  // Set these to your API and image base URLs
-  const API_BASE = window.GALLERY_API_BASE || '/api';
-  const IMAGE_BASE = window.GALLERY_IMAGE_BASE || '/photos';
+  const API_BASE = window.GALLERY_API_BASE;
+  const IMAGE_BASE = window.GALLERY_IMAGE_BASE;
 
   return {
     groups: [],
