@@ -10,7 +10,7 @@
   <script src="assets/js/config.js"></script>
 </head>
 <body class="bg-gray-200 text-gray-600 lg:flex" x-data="galleryLoader()" x-init="load()">
-  <header class="sticky top-0 left-0 p-4 w-screen lg:h-screen lg:max-w-sm lg:min-h-screen max-h-screen flex-shrink-0" x-data="{ open: false }" :class="{ 'h-screen': open }">
+  <header class="sticky top-0 left-0 z-40 p-4 w-screen lg:h-screen lg:max-w-sm lg:min-h-screen max-h-screen flex-shrink-0" x-data="{ open: false }" :class="{ 'h-screen': open }">
     <div class="w-full h-full bg-white rounded-3xl p-2 px-4 lg:p-4">
 
       <!-- Top bar to open the header on mobile -->
