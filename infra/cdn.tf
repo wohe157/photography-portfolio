@@ -1,23 +1,3 @@
-variable "frontend_bucket_domain_name" {
-  description = "The domain name for the frontend bucket"
-  type        = string
-}
-
-variable "media_bucket_domain_name" {
-  description = "The domain name for the media bucket"
-  type        = string
-}
-
-variable "api_gateway_domain_name" {
-  description = "The domain name of the deployed API Gateway"
-  type        = string
-}
-
-variable "acm_certificate_arn" {
-  description = "The ARN of the ACM certificate for CloudFront"
-  type        = string
-}
-
 resource "aws_cloudfront_origin_access_control" "frontend_oac" {
   name = "frontend-bucket-oac"
 
@@ -41,19 +21,19 @@ resource "aws_cloudfront_distribution" "website" {
 
   origin {
     origin_id                = "frontend-bucket-origin"
-    domain_name              = var.frontend_bucket_domain_name
+    domain_name              = module.frontend.bucket_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.frontend_oac.id
   }
 
   origin {
     origin_id                = "media-bucket-origin"
-    domain_name              = var.media_bucket_domain_name
+    domain_name              = module.media.bucket_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.media_oac.id
   }
 
   origin {
     origin_id   = "api-gateway-origin"
-    domain_name = var.api_gateway_domain_name
+    domain_name = module.backend.api_gateway_domain_name
     origin_path = "/prod"
 
     custom_origin_config {
@@ -103,7 +83,7 @@ resource "aws_cloudfront_distribution" "website" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = var.acm_certificate_arn
+    acm_certificate_arn      = "arn:aws:acm:us-east-1:771484536332:certificate/5f5d5bf1-b5db-4420-a5d2-81e5417d9332"
     minimum_protocol_version = "TLSv1.2_2021"
     ssl_support_method       = "sni-only"
   }
@@ -122,8 +102,4 @@ resource "aws_route53_record" "photo" {
 
     evaluate_target_health = false
   }
-}
-
-output "cloudfront_distribution_arn" {
-  value = aws_cloudfront_distribution.website.arn
 }
