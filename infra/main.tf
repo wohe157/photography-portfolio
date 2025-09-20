@@ -49,15 +49,3 @@ module "cdn" {
   api_gateway_domain_name     = module.backend.api_gateway_domain_name
   acm_certificate_arn         = "arn:aws:acm:us-east-1:771484536332:certificate/5f5d5bf1-b5db-4420-a5d2-81e5417d9332"
 }
-
-output "frontend_bucket_domain_name" {
-  value = module.frontend.website_domain_name
-}
-
-output "media_bucket_domain_name" {
-  value = module.media.website_domain_name
-}
-
-output "backend_api_url" {
-  value = module.backend.api_gateway_domain_name
-}
