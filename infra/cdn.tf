@@ -33,7 +33,7 @@ resource "aws_cloudfront_distribution" "website" {
 
   origin {
     origin_id   = "api-gateway-origin"
-    domain_name = module.backend.api_gateway_domain_name
+    domain_name = trimsuffix(replace(aws_apigatewayv2_api.api.api_endpoint, "https://", ""), "/")
     origin_path = "/prod"
 
     custom_origin_config {

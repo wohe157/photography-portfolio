@@ -1,0 +1,7 @@
+[project]
+name = "list-media"
+version = "0.1.0"
+description = "List the contents of the media bucket"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []

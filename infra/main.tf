@@ -18,11 +18,3 @@ terraform {
 provider "aws" {
   region = "eu-west-1"
 }
-
-module "backend" {
-  source = "./backend"
-
-  media_bucket_id   = module.media.bucket_id
-  media_bucket_name = module.media.bucket_name
-  media_bucket_arn  = module.media.bucket_arn
-}
