@@ -50,7 +50,7 @@ def build(service: Path, build_root: Path = DEFAULT_BUILD_ROOT) -> None:
     logger.info(f"Installing package into {build_path}")
     try:
         subprocess.run(
-            ["uv", "pip", "install", ".", "--target", str(build_path)],
+            ["uv", "pip", "install", ".", "--target", str(build_path), "--platform", "manylinux2014_x86_64"],
             cwd=service,
             check=True,
         )
